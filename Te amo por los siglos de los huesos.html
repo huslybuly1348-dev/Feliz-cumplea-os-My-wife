@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Para Macherie 💖</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  
+  html, body {
+    width: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    background-color: #0b0c10;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  /* CONTENEDOR PRINCIPAL */
+  #viewport {
+    position: relative;
+    width: 100%;
+    height: 100dvh;
+    background: radial-gradient(circle, #1a1c2e 0%, #090a10 100%);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* PERSONAJES */
+  .character {
+    position: absolute;
+    bottom: 150px;
+    width: 55vw;
+    max-width: 320px;
+    height: 60vh;
+    transition: all 0.4s ease;
+    filter: drop-shadow(0 8px 15px rgba(0,0,0,0.6));
+  }
+
+  #char-lara { left: -100%; }
+  #char-mari { right: -100%; }
+
+  .character.active {
+    opacity: 1;
+    transform: scale(1.05);
+    z-index: 5;
+  }
+  .character.inactive {
+    opacity: 0.4;
+    transform: scale(0.92);
+    filter: brightness(0.5);
+    z-index: 2;
+  }
+  .character.speaking-lara { left: 2%; }
+  .character.speaking-mari { right: 2%; }
+
+  /* CAJA DE DIÁLOGO */
+  #dialog-box {
+    position: absolute;
+    bottom: 20px;
+    left: 5%;
+    right: 5%;
+    height: 140px;
+    background: rgba(15, 18, 28, 0.94);
+    border: 2px solid #f38ba8;
+    border-radius: 16px;
+    padding: 12px 20px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    z-index: 20;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #speaker-tag {
+    display: inline-block;
+    background: linear-gradient(90deg, #f38ba8, #dda7a5);
+    color: #11111b;
+    font-weight: 800;
+    font-size: 0.95rem;
+    padding: 3px 14px;
+    border-radius: 8px;
+    letter-spacing: 1px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  /* TEXTO CENTRADO EN EL MEDIO DE LA CAJA */
+  #dialog-text {
+    color: #cdd6f4;
+    font-size: 1.05rem;
+    line-height: 1.4;
+    word-break: break-word;
+    white-space: pre-wrap;
+    letter-spacing: 0.3px;
+    text-align: center;
+    width: 100%;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .next-indicator {
+    position: absolute;
+    bottom: 6px;
+    right: 15px;
+    color: #f38ba8;
+    font-size: 0.9rem;
+    animation: blink 1s infinite alternate;
+  }
+
+  @keyframes blink { from { opacity: 0.2; } to { opacity: 1; } }
+
+  /* CARTA FINAL PANTALLA COMPLETA */
+  #letter-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(9, 10, 15, 0.95);
+    z-index: 40;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    backdrop-filter: blur(10px);
+  }
+
+  .paper-scroll {
+    background: #fbf7ee;
+    color: #2b2b2b;
+    width: 100%;
+    max-width: 650px;
+    height: 90dvh;
+    border-radius: 16px;
+    padding: 30px 25px;
+    overflow-y: auto;
+    font-family: Georgia, serif;
+    font-size: 1.15rem;
+    line-height: 1.8;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    border-left: 6px solid #f38ba8;
+    user-select: text;
+  }
+
+  .paper-scroll h2 { color: #d20f39; margin-bottom: 20px; text-align: center; font-size: 2rem; }
+  .paper-scroll hr { border: none; border-top: 1px solid #e6dabe; margin: 25px 0; }
+  .paper-scroll p { margin-bottom: 15px; }
+
+  /* OVERLAY INICIAL */
+  #start-screen {
+    position: absolute;
+    inset: 0;
+    background: #11111b;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #cdd6f4;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .start-btn {
+    background: #f38ba8;
+    color: #11111b;
+    border: none;
+    padding: 16px 40px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: 30px;
+    cursor: pointer;
+    margin-top: 25px;
+    box-shadow: 0 0 25px rgba(243, 139, 168, 0.5);
+  }
+</style>
+</head>
+<body>
+
+<div id="viewport">
+  
+  <!-- PANTALLA DE INICIO -->
+  <div id="start-screen">
+    <h1 style="color:#f38ba8; margin-bottom: 12px; font-size: 2.2rem;">🌸 Goodbye Lara 🌸</h1>
+    <p style="color:#a6adc8; font-size: 1.1rem;">Presiona para iniciar</p>
+    <button class="start-btn" onclick="startGame()">Iniciar Escena</button>
+  </div>
+
+  <!-- PERSONAJE 1: LARA -->
+  <div id="char-lara" class="character speaking-lara">
+    <svg viewBox="0 0 300 500" width="100%" height="100%">
+      <path d="M 50 180 Q 20 350 40 480 L 260 480 Q 280 350 250 180 Z" fill="#d20f39"/>
+      <path d="M 100 280 L 70 480 L 230 480 L 200 280 Z" fill="#40a02b"/>
+      <circle cx="150" cy="180" r="65" fill="#f5c2e7"/>
+      <path d="M 135 235 L 165 235 L 165 280 L 135 280 Z" fill="#ea999c"/>
+      <path d="M 85 170 Q 150 120 215 170 Q 220 100 150 90 Q 80 100 85 170 Z" fill="#e64553"/>
+      <path d="M 80 170 Q 60 280 50 380 Q 85 300 95 210 Z" fill="#e64553"/>
+      <path d="M 220 170 Q 240 280 250 380 Q 215 300 205 210 Z" fill="#e64553"/>
+      <ellipse cx="125" cy="180" rx="12" ry="18" fill="#1e66f5"/>
+      <ellipse cx="175" cy="180" rx="12" ry="18" fill="#1e66f5"/>
+      <circle cx="122" cy="175" r="4" fill="#ffffff"/>
+      <circle cx="172" cy="175" r="4" fill="#ffffff"/>
+      <ellipse cx="110" cy="195" rx="8" ry="4" fill="#f38ba8" opacity="0.6"/>
+      <ellipse cx="190" cy="195" rx="8" ry="4" fill="#f38ba8" opacity="0.6"/>
+      <path d="M 142 200 Q 150 208 158 200" stroke="#8839ef" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- PERSONAJE 2: MARI -->
+  <div id="char-mari" class="character speaking-mari inactive">
+    <svg viewBox="0 0 300 500" width="100%" height="100%">
+      <path d="M 45 180 Q 10 360 30 480 L 270 480 Q 290 360 255 180 Z" fill="#11111b"/>
+      <path d="M 105 280 L 75 480 L 225 480 L 195 280 Z" fill="#1e66f5"/>
+      <circle cx="150" cy="180" r="65" fill="#f5c2e7"/>
+      <path d="M 135 235 L 165 235 L 165 280 L 135 280 Z" fill="#ea999c"/>
+      <path d="M 85 165 Q 150 115 215 165 Q 225 90 150 85 Q 75 90 85 165 Z" fill="#1e1e2e"/>
+      <path d="M 75 165 Q 55 290 45 400 Q 80 310 90 205 Z" fill="#1e1e2e"/>
+      <path d="M 225 165 Q 245 290 255 400 Q 220 310 210 205 Z" fill="#1e1e2e"/>
+      <ellipse cx="125" cy="180" rx="11" ry="17" fill="#313244"/>
+      <ellipse cx="175" cy="180" rx="11" ry="17" fill="#313244"/>
+      <circle cx="123" cy="176" r="4" fill="#ffffff"/>
+      <circle cx="173" cy="176" r="4" fill="#ffffff"/>
+      <ellipse cx="112" cy="195" rx="7" ry="3" fill="#f38ba8" opacity="0.5"/>
+      <ellipse cx="188" cy="195" rx="7" ry="3" fill="#f38ba8" opacity="0.5"/>
+      <path d="M 140 198 Q 150 206 160 198" stroke="#313244" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- CAJA DE DIÁLOGOS -->
+  <div id="dialog-box" onclick="advanceDialog()">
+    <div id="speaker-tag">Mari</div>
+    <div id="dialog-text">...</div>
+    <div class="next-indicator">▼</div>
+  </div>
+
+  <!-- CARTA DESPLEGABLE PANTALLA COMPLETA -->
+  <div id="letter-overlay">
+    <div class="paper-scroll" id="letter-content"></div>
+  </div>
+
+</div>
+
+<!-- REPRODUCTOR DE MÚSICA CON TU ENLACE DE DROPBOX -->
+<audio id="bgm" loop preload="auto">
+  <source src="https://www.dropbox.com/scl/fi/q1ph4xq186a0qx6r9cmqv/wave-to-earth-love.-Clean-Inst..mp3?rlkey=u6b0cmho0gsk9izq6i6rhr0ef&st=5spho0ln&raw=1" type="audio/mpeg">
+</audio>
+
+<script>
+const scriptData = [
+  { speaker: "Lara 🔴", char: "lara", text: "Oye, Mari..." },
+  { speaker: "Mari 🖤", char: "mari", text: "¿Qué pasa?" },
+  { speaker: "Lara 🔴", char: "lara", text: "¿Estarás ahí?" },
+  { speaker: "Mari 🖤", char: "mari", text: "¿Estar... dónde?" },
+  { speaker: "Lara 🔴", char: "lara", text: "No quiero morir sola, solo soy un problema para los demás..." },
+  { speaker: "Mari 🖤", char: "mari", text: "...." },
+  { speaker: "Mari 🖤", char: "mari", text: "Lara..." },
+  { speaker: "Lara 🔴", char: "lara", text: "¿Me recordarás aunque me vaya?" },
+  { speaker: "Mari 🖤", char: "mari", text: "¡No digas eso!" },
+  { speaker: "Lara 🔴", char: "lara", text: "Pero soy un desastre..." },
+  { speaker: "Mari 🖤", char: "mari", text: "Nunca te lo dije, pero te equivocas. A mí nunca me importó que causaras problemas o te metieras en líos. Yo... yo solo me sentía muy sola sin ti." },
+  { speaker: "Lara 🔴", char: "lara", text: "Tú siempre estuviste ahí para mí cuando nadie más lo hizo. Por eso déjame ir al frente esta vez, por favor. Si esta resulta ser nuestra última partida juntas, quiero asegurarme de que estés a salvo." },
+  { speaker: "Mari 🖤", char: "mari", text: "¡No me importa lo peligroso que sea! Está bien si complicas todo... Aunque nos metamos en un gran problema, yo solo quería que nos quedáramos las dos aquí... para siempre." },
+  { speaker: "Lara 🔴", char: "lara", text: "No podemos quedarnos atrapadas aquí. Antes de irme... toma. Ten esto. Es una carta para ti. La escribí guardando todo lo que siento por nosotros, para que la leas si no logro regresar..." },
+  { speaker: "Mari 🖤", char: "mari", text: "No digas eso, no pienses que no vas a volver. Pero... la guardaré pegada a mí. Te prometo que estará a salvo conmigo." }
+];
+
+const letterText = `
+<h2>My moon 💖</h2>
+<p>A veces me parece increíble que todo haya empezado con algo tan pequeño.</p>
+<p>El 3 de noviembre de 2022.</p>
+<p>Dos personas que ni siquiera sabían el nombre de la otra, coincidiendo por completo accidente en un grupo de The Owl House.</p>
+<p>Yo solamente pregunté si alguien quería compartir estado conmigo.</p>
+<p>Tú dijiste que sí.</p>
+<p>Y ya.</p>
+<p>Eso fue todo.</p>
+<p>No hubo una historia enorme detrás de ese primer momento. No sabíamos quiénes éramos, no sabíamos qué iba a pasar y mucho menos podíamos imaginar todo lo que vendría después.</p>
+<p>Éramos dos desconocidas que coincidieron por aburrimiento.</p>
+<p>Y qué curioso pensar que, de todas las personas que pudieron haber contestado ese día… contestaste tú.</p>
+<p>Al principio solamente existían esos pequeños “hola” y “descansa”. Nada demasiado especial.</p>
+<p>Hasta que, sin darnos cuenta, esos pequeños mensajes comenzaron a durar un poco más. Después una tarde entera. Después otra. Y luego ya estábamos hablando de cualquier estupidez posible como si nos conociéramos desde siempre.</p>
+<p>Hasta que me llamaste “batatita”.</p>
+<p>Y quizá desde afuera parece una tontería. Pero para mí fue una de esas pequeñas cosas que cambian algo sin avisarte.</p>
+<p>Porque desde entonces empezaste a dejar de ser simplemente una chica con la que hablaba. Empezaste a ser tú.</p>
+<p>Y yo todavía no sabía que estaba conociendo a la persona que terminaría amando durante años.</p>
+
+<hr>
+
+<p>Lo extraño es que nuestra historia nunca fue sencilla. Nunca tuvo un camino completamente recto.</p>
+<p>Nos quisimos cuando ni siquiera sabíamos exactamente qué éramos. Nos alejamos cuando las dos sentíamos algo que ninguna sabía cómo nombrar.</p>
+<p>Y aunque no hubiera existido una etiqueta que dijera “relación”, el amor estaba ahí. Solamente que éramos demasiado jóvenes, demasiado confundidas y quizá demasiado asustadas para entenderlo.</p>
+<p>El 5 de junio de 2024 nos separamos. Y todavía me parece curioso que incluso después de eso nunca supimos ser realmente ex.</p>
+<p>Porque ¿cómo se supone que dejas de querer a alguien solamente porque decidieron dejar de llamarse pareja?</p>
+<p>Seguíamos teniendo esa confianza. Ese cariño. Esa manera tan nuestra de hablarnos. Esa chispa que hizo que alguna vez existiera “Hanluz”.</p>
+<p>Pasó el tiempo. Volvimos a hablar. Y después volvimos a encontrarnos de una manera diferente.</p>
+<p>El 13 de abril de 2025 volvimos a ser pareja. Y durante un tiempo volvimos a elegirnos de esa forma.</p>
+<p>Pero también aprendimos algo que quizá ninguna de las dos quería aprender: amar a alguien no significa automáticamente saber cómo hacerlo bien.</p>
+<p>Nos amábamos. Eso nunca fue el problema. El problema era que todavía estábamos aprendiendo a querernos sin hacernos daño.</p>
+<p>Y llegó un punto en el que nuestra relación dejó de sentirse como el lugar donde ambas podíamos estar tranquilas. Se volvió dolorosa. Cruel para las dos.</p>
+<p>Y por más amor que hubiera, tuvimos que aceptar algo que dolía muchísimo: que a veces quedarse también puede ser una manera de lastimar.</p>
+<p>Por eso nos separamos el 28 de febrero de 2026. No porque el amor hubiera desaparecido. Sino porque necesitábamos dejar de confundir amar con aguantarlo todo.</p>
+<p>Y creo que esa fue una de las cosas más difíciles que hemos tenido que entender.</p>
+
+<hr>
+
+<p>Después pasó el tiempo. Y aunque intentara seguir con mi vida, hubo algo que nunca cambió del todo.</p>
+<p>Tu ausencia nunca consiguió convertirte en alguien indiferente. Porque aprendí algo contigo: no pienses que porque no te busco no te pienso.</p>
+<p>A veces simplemente no digo nada. Pero eso no significa que no estés en algún rincón de mi cabeza.</p>
+<p>Y entonces llegaste otra vez. Un mensaje. Un “te extraño”. Los brazos abiertos.</p>
+<p>Y no voy a mentirte, Luz… mi corazón se volvió completamente loco.</p>
+<p>Porque en ese instante entendí algo que quizá ya sabía desde antes: yo nunca había dejado de amarte.</p>
+<p>Tal vez había aprendido a vivir sin tenerte de la misma manera. Tal vez había aprendido a guardar ciertas cosas. Tal vez había aprendido a no buscarte.</p>
+<p>Pero dejar de amarte… eso nunca pasó.</p>
+
+<hr>
+
+<p>Y ahora estamos aquí. Otra vez.</p>
+<p>Pero esta vez no quiero llamarlo simplemente “volver”. Porque no somos las mismas niñas que se conocieron en 2022.</p>
+<p>Tú cambiaste. Yo cambié. Y nuestra manera de querernos también tiene que cambiar.</p>
+<p>No quiero regresar exactamente a donde estábamos. Quiero que hagamos algo nuevo con todo lo que aprendimos.</p>
+<p>Quiero conocerte otra vez. A la Luz que eres ahora. Y quiero que tú también conozcas a la persona en la que me convertí.</p>
+<p>Porque creo que amar a alguien durante tanto tiempo también significa aprender a amar sus cambios. No esperar que permanezca exactamente igual para que siga siendo la persona que quieres. Sino verla crecer y pensar: <i>“Quiero conocer esta nueva versión de ti también.”</i></p>
+<p>Eso es lo que quiero hacer contigo.</p>
+<p>No quiero prometerte una historia perfecta, porque ya sabemos que no existe. No quiero decirte que nunca vamos a equivocarnos, seguramente lo haremos. No quiero decirte que jamás tendremos miedo o inseguridades, probablemente las tendremos.</p>
+<p>Pero sí quiero que, si alguna vez volvemos a elegirnos completamente, sea desde un lugar diferente. Más tranquilo. Más consciente. Más nuestro.</p>
+<p>Que podamos querernos sin perder quiénes somos. Que podamos hablar antes de hacernos daño. Que podamos aprender a quedarnos sin sentir que tenemos que destruirnos para demostrar cuánto nos queremos.</p>
+<p>Porque ahora entiendo que amar también es eso. No solamente querer estar con alguien, también querer que esa persona esté bien, incluso cuando hacerlo bien implique soltarla.</p>
+<p>Y quizá por eso sigo creyendo en nosotras. Porque ya tuvimos que soltarnos, y aun así, después de todo, seguimos encontrando el camino de regreso.</p>
+
+<hr>
+
+<p>Cuatro años. Qué locura decirlo así.</p>
+<p>Cuatro años desde que una desconocida respondió a un mensaje cualquiera. Cuatro años desde aquel primer “hola”. Cuatro años de conocer diferentes versiones de ti y de que tú conozcas diferentes versiones de mí.</p>
+<p>No sé qué nombre tendrá nuestra historia dentro de unos meses. No sé exactamente qué seremos. Y por primera vez, creo que no necesito saberlo todavía.</p>
+<p>Me basta con saber que estamos aquí. Comenzando otra vez. Pero no desde cero; desde todo lo que aprendimos, desde todo lo que sobrevivimos, desde todo lo que todavía sentimos.</p>
+<p>Y si algún día volvemos a mirarnos y decidimos elegirnos una vez más, quiero que sea porque ambas sabemos que podemos construir algo mejor. No porque tengamos miedo de estar separadas. No porque extrañemos lo que fuimos. Sino porque nos guste lo que podemos llegar a ser.</p>
+<p>Porque quizá eso sea lo más bonito de nuestra historia. Que no nos quedamos iguales. Cambiamos. Crecimos. Nos equivocamos. Nos alejamos. Nos volvimos a encontrar. Y seguimos aprendiendo.</p>
+<p>Tal vez amar nunca fue fácil. Tal vez nunca lo será. Pero si algo me enseñaste durante todos estos años es que el amor no solamente consiste en encontrar a alguien, también consiste en aprender a encontrarla una y otra vez.</p>
+<p>Y yo quiero seguir conociendo a la Luz que venga después. A la que todavía no conozco. A la que va a cambiar. A la que va a crecer. Así como espero que tú quieras conocer todas las versiones de mí que todavía faltan.</p>
+<p>Porque después de cuatro años, todavía siento que nos queda muchísimo por descubrir.</p>
+<p>Y eso… me hace feliz.</p>
+<p><b>Te amo, Luz.</b></p>
+<p>No por quien fuiste. No solamente por quien eres. Sino también por quien todavía vas a ser.</p>
+<p>Y si la vida nos sigue dando oportunidades de encontrarnos… espero que esta vez sepamos aprovecharlas con todo lo que aprendimos.</p>
+<p>Sin correr. Sin forzar. Sin intentar regresar al pasado.</p>
+<p>Simplemente tú y yo. Empezando algo nuevo. Otra vez.</p>
+<p>Pero esta vez… sabiendo cuánto vale.</p>
+`;
+
+let currentStep = 0;
+let isTyping = false;
+let typeTimer = null;
+
+function startGame() {
+  document.getElementById('start-screen').style.display = 'none';
+  const audio = document.getElementById('bgm');
+  audio.volume = 0.8;
+  
+  const playPromise = audio.play();
+  if (playPromise !== undefined) {
+    playPromise.then(_ => {
+      console.log("Música iniciada correctamente");
+    }).catch(error => {
+      console.log("Error al reproducir audio:", error);
+    });
+  }
+  showStep(0);
+}
+
+function showStep(index) {
+  if (index >= scriptData.length) {
+    openLetter();
+    return;
+  }
+
+  const data = scriptData[index];
+  const tag = document.getElementById('speaker-tag');
+  const txt = document.getElementById('dialog-text');
+  const laraEl = document.getElementById('char-lara');
+  const mariEl = document.getElementById('char-mari');
+
+  tag.innerText = data.speaker;
+
+  if (data.char === 'lara') {
+    laraEl.className = 'character speaking-lara active';
+    mariEl.className = 'character speaking-mari inactive';
+  } else {
+    mariEl.className = 'character speaking-mari active';
+    laraEl.className = 'character speaking-lara inactive';
+  }
+
+  txt.innerText = '';
+  isTyping = true;
+  let i = 0;
+  clearInterval(typeTimer);
+
+  typeTimer = setInterval(() => {
+    if (i < data.text.length) {
+      txt.innerText += data.text.charAt(i);
+      i++;
+    } else {
+      clearInterval(typeTimer);
+      isTyping = false;
+    }
+  }, 25);
+}
+
+function advanceDialog() {
+  if (isTyping) {
+    clearInterval(typeTimer);
+    document.getElementById('dialog-text').innerText = scriptData[currentStep].text;
+    isTyping = false;
+  } else {
+    currentStep++;
+    showStep(currentStep);
+  }
+}
+
+function openLetter() {
+  document.getElementById('dialog-box').style.display = 'none';
+  document.getElementById('letter-content').innerHTML = letterText;
+  document.getElementById('letter-overlay').style.display = 'flex';
+}
+</script>
+</body>
+</html>
